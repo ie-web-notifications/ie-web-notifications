@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<!--
+// IE Web Notifications
+// Copyright (C) 2015-2016, Sergei Zabolotskikh. All rights reserved.
+//
+// This file is a part of IE Web Notifications project.
+// The use and distribution terms for this software are covered by the
+// BSD 3-Clause License (https://opensource.org/licenses/BSD-3-Clause)
+// which can be found in the file LICENSE at the root of this distribution.
+// By using this software in any fashion, you are agreeing to be bound by
+// the terms of this license. You must not remove this notice, or
+// any other, from this software.
+-->
+<html>
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <style>
+    * {
+      cursor: default;
+    }
+
+    a {
+      cursor: pointer;
+    }
+
+    html, body, div {
+      margin: 0;
+      background-color: #eeeeee;
+    }
+    body {
+      padding: 10px;
+    }
+    .entry td {
+      padding-top: 10px;
+    }
+
+    .entry .btn-remove {
+      background-color: #bd2524;
+      border-color: #921d1c;
+    }
+    
+    table {
+      font-family: Consolas;
+    }
+    
+    .entry a {
+      color: #fff;
+
+      font-size: 14px;
+      text-align: center;
+
+      padding: 0px 4px;
+      margin-bottom: 0px;
+      vertical-align: middle;
+      background-image: none;
+
+      border: 1px solid transparent;
+      border-radius: 4px;
+    }
+    
+    .caption {
+      font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+      width: 100%;
+      font-size: 20px;
+    }
+    
+    .closeButton {
+      background-color: grey;
+      color: white;
+      font-weight: bold;
+      font-family: "Consolas, monaco, monospace";
+      text-decoration: none;
+      width: 18px;
+      height: 18px;
+      vertical-align: middle;
+      text-align: center;
+      margin-right: 10px;
+      cursor: default;
+    }
+    .closeButton:hover {
+      background-color: red;
+      text-decoration: none;
+    }
+    .hidden {
+      display: none;
+    }
+    </style>
+  </head>
+  <body>
+    <div style="display:none;">
+      <table>
+        <tbody id="rowTemplateHolder">
+          <tr class="entry">
+            <td><label><input type="checkbox"><span></span></label></td>
+            <td><a class="btn-remove" title="Remove">&times;</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="padding:20px 10px 10px 10px;">
+      <a class="closeButton" style="float: right;" href="#" onclick="window.external.Close();">&times;</a>
+      <p class="caption">IE Web Notifications settings</p>
+    </div>
+    <div id="toastNotificationsSection" class="hidden">
+      <label><input type="checkbox"><span>Use toast notifications</span></label>
+    </div>
+    <div>
+      <p style="font-size: 18px;">Notifications are configured for the following sources:</p>
+      <table style="width:100%;">
+        <tbody id="resultContainer">
+        </tbody>
+      </table>
+    </div>
+  </body>
+  <script>
+    var templateNode = document.querySelector("#rowTemplateHolder tr");
+    var toastNotificationsSection = document.querySelector("#toastNotificationsSection");
+    var sources = window.external;
+    function updateToastNotificationsSection() {
+      var areToastsEnabled = sources.isToastNotificationsSystemEnabled;
+      if (areToastsEnabled === undefined) {
+        // ensure the section is hidden
+        if (!toastNotificationsSection.classList.contains('hidden')) {
+          toastNotificationsSection.classList.add('hidden');
+        }
+      } else {
+        // ensure the section is visible
+        while (toastNotificationsSection.classList.contains('hidden') && toastNotificationsSection.classList.toggle('hidden'));
+        toastNotificationsSection.querySelector("input").checked = areToastsEnabled;
+        toastNotificationsSection.querySelector("input").addEventListener('change', function() {
+          sources.isToastNotificationsSystemEnabled = this.checked;
+        }, false);
+      }
+    };
+    updateToastNotificationsSection();
+    sources.ConnectOnToastNotificationsChanged(updateToastNotificationsSection);
+
+    function reloadSources() {
+      var l = sources.Count;
+      for (var i = 0; i < l; ++i) {
+        var elX = templateNode.cloneNode(true);
+        var source = sources.item(i);
+        elX.setAttribute("data-origin", source.origin);
+        elX.querySelector("input").checked = source.permission === "granted";
+        // Use this var to capture value to avoid capturing of IDispatch.
+        // It's not a trouble, however just in case I find it's better way.
+        // However, `sources` is anyway captured.
+        var origin = source.origin;
+        elX.querySelector("span").innerHTML = origin;
+        elX.querySelector("a").addEventListener('click', function() {
+          sources.Remove(this.parentNode.parentNode.getAttribute("data-origin"));
+        }, false);
+        elX.querySelector("input").addEventListener('change', function() {
+          sources.SetPermission(this.parentNode.parentNode.parentNode.getAttribute("data-origin"), this.checked);
+        }, false);
+        document.getElementById("resultContainer").appendChild(elX);
+      }
+    };
+    reloadSources();
+    sources.ConnectOnChanged(function(){
+      var tbody = document.getElementById("resultContainer")
+      while (tbody.firstChild) {
+        tbody.removeChild(tbody.firstChild);
+      }
+      reloadSources();
+    });
+  </script>
+</html>

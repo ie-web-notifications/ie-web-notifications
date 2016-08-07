@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup>
+    <PreBuildEvent>
+      <Command>
+pushd "$(ProjectDir)"
+IF NOT EXIST "$(ProjectDir)prebuild.cmd" exit /b 0 
+
+SET SOLUTIONDIR=$(SolutionDir)
+SET SOLUTIONOUTDIR=$(SolutionOutDir)
+SET PLATFORM=$(Platform)
+SET PROJECTNAME=$(ProjectName)
+SET PROJECTDIR=$(ProjectDir)
+SET CONFIGURATION=$(Configuration)
+SET TARGETPATH=$(TargetPath)
+SET ARCHITECTURE=$(PlatformTarget)
+SET OUTDIR=$(OutDir)
+SETLOCAL
+CALL prebuild.cmd
+ENDLOCAL
+popd
+</Command>
+    </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>IF NOT EXIST "$(ProjectDir)postbuild.cmd" exit /b 0 
+SET SOLUTIONDIR=$(SolutionDir)
+SET SOLUTIONOUTDIR=$(SolutionOutDir)
+SET PLATFORM=$(Platform)
+SET PROJECTNAME=$(ProjectName)
+SET PROJECTDIR=$(ProjectDir)
+SET CONFIGURATION=$(Configuration)
+SET TARGETPATH=$(TargetPath)
+SET ARCHITECTURE=$(PlatformTarget)
+SET OUTDIR=$(OutDir)
+SET PATH=$(QTDIR)\bin;%PATH%
+pushd "$(ProjectDir)"
+SETLOCAL
+CALL postbuild.cmd
+ENDLOCAL
+popd
+
+</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup />
+</Project>

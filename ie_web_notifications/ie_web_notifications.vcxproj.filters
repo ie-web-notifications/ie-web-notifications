@@ -1,0 +1,169 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{2bb80106-ae1d-4974-abf5-e98f124f2148}</UniqueIdentifier>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{c14aab15-92dc-4f3f-9067-bb20ac0bfb64}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include">
+      <UniqueIdentifier>{c204f003-fe6b-44a8-a0f6-bb8b47ceae0e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\sergz.logger">
+      <UniqueIdentifier>{033da853-298b-4ae7-9504-ac61a98f6699}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\sergz.atl">
+      <UniqueIdentifier>{63b2db5f-5a79-4ee4-b31f-0ff027ff368b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\sergz.utils">
+      <UniqueIdentifier>{b21b6fa5-7fa0-465a-a5eb-e10ad74bb358}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\sergz.utils.convertTo.string">
+      <UniqueIdentifier>{b7414798-33ba-4056-bb94-3e4dbd658cc8}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dllmain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NotificationFactory.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="BHOImpl.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="GModel.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="ClientImpl.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="NotificationPrototypeImpl.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="WebBrowserEventsListener.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="IWebBrowser2Helper.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="LoggerHelper.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\sergz\SharedObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\sergz.logger\Logger.h">
+      <Filter>include\sergz.logger</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\sergz.atl\atl.h">
+      <Filter>include\sergz.atl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\sergz.utils\utils.h">
+      <Filter>include\sergz.utils</Filter>
+    </ClInclude>
+    <ClInclude Include="NotificationFactory.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="BHOImpl.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="ie_web_notifications_i.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GModel.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="IClient.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="ClientImpl.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\sergz.utils\SynchronizedDeque.h">
+      <Filter>include\sergz.utils</Filter>
+    </ClInclude>
+    <ClInclude Include="NotificationPrototypeImpl.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\sergz.utils\CScopedLocale.h">
+      <Filter>include\sergz.utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\sergz.utils\Pipe.h">
+      <Filter>include\sergz.utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\sergz.util.convertTo.string\ConvertTo.h">
+      <Filter>include\sergz.utils.convertTo.string</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\sergz.utils\ScopedHandle.h">
+      <Filter>include\sergz.utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\sergz.utils\ScopedProcessInformation.h">
+      <Filter>include\sergz.utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\sergz.utils\ElapsedTimer.h">
+      <Filter>include\sergz.utils</Filter>
+    </ClInclude>
+    <ClInclude Include="WebBrowserEventsListener.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="IWebBrowser2Helper.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="IDispatchEmptyImpl.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\ie_web_notifications.server.client\StartServer.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="LoggerHelper.h">
+      <Filter>src</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="ie_web_notifications.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ie_web_notifications.def">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="ie_web_notifications.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="ie_web_notifications.idl">
+      <Filter>Source Files</Filter>
+    </Midl>
+  </ItemGroup>
+</Project>

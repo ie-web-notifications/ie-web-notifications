@@ -1,0 +1,69 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="pch">
+      <UniqueIdentifier>{b831e755-16a0-4c84-be64-944d7d1bdd8c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{d0325d05-2907-4d63-90b9-1aeae8c5feeb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include">
+      <UniqueIdentifier>{bfa90529-8afd-4db2-a1b9-9eaecee31f0c}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdafx.h">
+      <Filter>pch</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>pch</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sergz.utils\utils.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sergz.utils\SynchronizedDeque.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sergz.utils\Pipe.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sergz.utils\ScopedHandle.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sergz.utils\CScopedLocale.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sergz.utils\ScopedProcessInformation.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sergz.utils\ElapsedTimer.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sergz.utils\EventWithSetter.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sergz.utils\DPIAwareness.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sergz.utils\Noncopyable.h">
+      <Filter>include</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>pch</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Pipe.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ElapsedTimer.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\EventWithSetter.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

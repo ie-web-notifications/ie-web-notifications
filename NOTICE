@@ -1,0 +1,13 @@
+Please find the lincense for the current software in LICENSE file at the root of the project.
+
+
+=========================================================================
+==                          3rd Party Software                         ==
+=========================================================================
+
+WTL 9.0
+  Source: zip archive, for more details visit http://wtl.sourceforge.net/
+  License: Common Public License Version 1.0
+  License Source: http://opensource.org/licenses/cpl1.0.php
+  Linking: static
+  Modified: No

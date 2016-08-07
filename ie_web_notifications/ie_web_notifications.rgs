@@ -1,0 +1,42 @@
+HKCR
+{
+  NoRemove CLSID
+  {
+    ForceRemove {B711FAD4-1850-4221-BB31-8791CA9FAA38} = s 'IE WebNotifications BHO Class'
+    {
+      ForceRemove Programmable
+      InprocServer32 = s '%MODULE%'
+      {
+        val ThreadingModel = s 'Apartment'
+      }
+      TypeLib = s '{B711FAD4-1850-4221-BB31-8791CA9FAA39}'
+      Version = s '1.0'
+    }
+  }
+}
+
+HKLM
+{
+  NoRemove SOFTWARE
+  {
+    NoRemove Microsoft
+    {
+      Windows
+      {
+        CurrentVersion
+        {
+          Explorer
+          {
+            'Browser Helper Objects'
+            {
+              {B711FAD4-1850-4221-BB31-8791CA9FAA38}
+              {
+                val 'NoExplorer' = d '1'
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

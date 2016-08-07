@@ -1,0 +1,56 @@
+// IE Web Notifications
+// Copyright (C) 2015-2016, Sergei Zabolotskikh. All rights reserved.
+//
+// This file is a part of IE Web Notifications project.
+// The use and distribution terms for this software are covered by the
+// BSD 3-Clause License (https://opensource.org/licenses/BSD-3-Clause)
+// which can be found in the file LICENSE at the root of this distribution.
+// By using this software in any fashion, you are agreeing to be bound by
+// the terms of this license. You must not remove this notice, or
+// any other, from this software.
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+cpp_quote("#ifdef __cplusplus")
+cpp_quote("namespace ukot { namespace ie_web_notifications { namespace com {")
+cpp_quote("#endif")
+
+// Firstly we have to destroy window (HWND in system) and only then we are
+// allowed to destroy C++ wrapper to avoid resource leaking or access violation.
+// So, the C++ window object should be deleted not earlier than this callback
+// is called.
+[
+  object,
+  uuid(B711FAD4-1850-4221-BB31-8791CA9FAA00),
+  pointer_default(unique)
+]
+interface INotificationWindowCallback : IUnknown {
+  HRESULT closed(BOOL clicked);
+  HRESULT requestSettingsShowing();
+};
+
+[
+  object,
+  uuid(B711FAD4-1850-4221-BB31-8791CA9FAA02),
+  pointer_default(unique)
+]
+interface INotificationWindow : IUnknown {
+  HRESULT setNotificationBody(BSTR title, BSTR body, BSTR iconPath);
+  HRESULT destroy();
+  HRESULT setSlot(byte slotNumber);
+};
+
+// This interface is only to avoid singletons.
+[
+  object,
+  uuid(B711FAD4-1850-4221-BB31-8791CA9FAA03),
+  pointer_default(unique)
+]
+interface INotificationWindowFactory : IUnknown {
+  HRESULT create(BSTR title, BSTR body, BSTR iconPath, INotificationWindowCallback* cb, [out] INotificationWindow** retValue);
+};
+
+cpp_quote("#ifdef __cplusplus")
+cpp_quote("}}}")
+cpp_quote("#endif")
