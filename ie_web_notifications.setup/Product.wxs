@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:wixUtil="http://schemas.microsoft.com/wix/UtilExtension">
+  <?define MainProductName="IE Web Notifications"?>
+  <?define BinaryOutputDir="../build/" ?>
+
+  <?if $(var.Platform) = x64 ?>
+    <?define PlatformProgramFilesFolder = "ProgramFiles64Folder" ?>
+  <?else ?>
+    <?define PlatformProgramFilesFolder = "ProgramFilesFolder" ?>
+  <?endif ?>
+
+  <!--Build using debug binaries-->
+  <?define BinariesConfiguration = "Release"?>
+
+  <Product
+    Id="*"
+    Name="$(var.MainProductName) (alpha)"
+    Language="1033"
+    Version="0.8.3.0"
+    Manufacturer="Sergei Zabolotskikh"
+    UpgradeCode="004A0D77-201A-486F-A08B-B00053C40000">
+
+    <Package
+      InstallerVersion="500"
+      Compressed="yes"
+      InstallScope="perMachine"
+      Comments="This installer database contains the logic and data required to install $(var.MainProductName)." />
+
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of $(var.MainProductName) is already installed." />
+    <MediaTemplate EmbedCab="yes"/>
+
+    <Feature Id="MainProduct" Title="$(var.MainProductName)" Level="1">
+      <ComponentGroupRef Id="MainProductComponents" />
+      <ComponentGroupRef Id="AppLocalLowDataFolderComponents" />
+    </Feature>
+    <Feature Id="ProgramMenuShortcuts" Title="Shortcuts in program menu" Level="1">
+      <ComponentGroupRef Id="ProgramMenuShortcutsComponents" />
+    </Feature>
+
+    <Icon Id="iconGlobalIcon" SourceFile="$(var.BinaryOutputDir)../logo.ico"/>
+    <Property Id="ARPPRODUCTICON" Value="iconGlobalIcon"/>
+
+    <!--<UIRef Id="WixUI_Minimal"/>-->
+  </Product>
+
+  <Fragment>
+    <!--
+      TODO: Use custom action to get it via SHGetKnownFolderPath FOLDERID_LocalAppDataLow
+    -->
+    <Property Id="LOCAL_LOW_APP_DATA_FOLDER">
+      <!-- There's no built-in property with this name, so we need to extract its value from the registry. -->
+      <RegistrySearch Id="rgLocalLowFinder"
+                      Root="HKCU" Key="Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders"
+                      Name="{A520A1A4-1780-4FF6-BD18-167343C5AF16}"
+                      Type="raw" />
+    </Property>
+
+    <Property Id="PRIVATE_LOCAL_LOW_APP_DATA_FOLDER">
+      <!-- There's no built-in property with this name, so we need to extract its value from the registry. -->
+      <RegistrySearch Id="rgPrivateDataDirFinder"
+                      Root="HKCU" Key="Software\[Manufacturer]\$(var.MainProductName)"
+                      Name="PrivateDir"
+                      Type="raw" />
+    </Property>
+
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="$(var.PlatformProgramFilesFolder)">
+        <Directory Id="dirProgramFilesIEWebNotificaions" Name="$(var.MainProductName)">
+          <Component Id="cmpIEWebNotificationsBHO32" Guid="004A0D77-201A-486F-A08B-B00053C40001" Win64="no">
+            <File Id="fileIEWebNotificationsBHO32_DLL"
+                  Name="ie_web_notifications32.dll"
+                  Source="$(var.BinaryOutputDir)Win32_$(var.BinariesConfiguration)/ie_web_notifications.dll"
+                  KeyPath="yes"
+                  Vital="yes">
+              <Class Id="B711FAD4-1850-4221-BB31-8791CA9FAA38"
+                     Context="InprocServer32"
+                     Description="IE WebNotifications BHO Class"
+                     ThreadingModel="apartment"
+                     Version="1.0"
+                     Programmable="yes">
+              </Class>
+            </File>
+            <RegistryValue Root="HKLM"
+                           Key="Software\Microsoft\Windows\CurrentVersion\Explorer\Browser Helper Objects\{B711FAD4-1850-4221-BB31-8791CA9FAA38}"
+                           Name="NoExplorer"
+                           Value="1"
+                           Type="integer"
+                           Action="write" />
+            <RegistryKey Root="HKLM"
+                         Key="Software\Classes\CLSID\{B711FAD4-1850-4221-BB31-8791CA9FAA38}\Implemented Categories\{59fb2056-d625-48d0-a944-1a85b5ab2640}"
+                         ForceCreateOnInstall="yes">
+            </RegistryKey>
+          </Component>
+          <?if $(var.Platform) = x64 ?>
+          <Component Id="cmpIEWebNotificationsBHO64" Guid="004A0D77-201A-486F-A08B-B00053C40005" Win64="yes">
+            <File Id="fileIEWebNotificationsBHO64_DLL"
+                  Name="ie_web_notifications64.dll"
+                  Source="$(var.BinaryOutputDir)/x64_$(var.BinariesConfiguration)/ie_web_notifications.dll"
+                  KeyPath="yes"
+                  Vital="yes">
+              <Class Id="B711FAD4-1850-4221-BB31-8791CA9FAA38"
+                     Context="InprocServer32"
+                     Description="IE WebNotifications BHO Class"
+                     ThreadingModel="apartment"
+                     Version="1.0"
+                     Programmable="yes">
+              </Class>
+            </File>
+            <RegistryValue Root="HKLM"
+                           Key="Software\Microsoft\Windows\CurrentVersion\Explorer\Browser Helper Objects\{B711FAD4-1850-4221-BB31-8791CA9FAA38}"
+                           Name="NoExplorer"
+                           Value="1"
+                           Type="integer"
+                           Action="write" />
+            <RegistryKey Root="HKLM"
+                         Key="Software\Classes\CLSID\{B711FAD4-1850-4221-BB31-8791CA9FAA38}\Implemented Categories\{59fb2056-d625-48d0-a944-1a85b5ab2640}"
+                         ForceCreateOnInstall="yes">
+            </RegistryKey>
+          </Component>
+          <?endif ?>
+          <Component Id="cmpIEWebNotificationsServer" Guid="004A0D77-201A-486F-A08B-B00053C40003">
+            <File Id="fileIEWebNotificationsServer_EXE"
+                  Name="ie_web_notifications_server.exe"
+                  Source="$(var.BinaryOutputDir)Win32_$(var.BinariesConfiguration)/ie_web_notifications_server.exe"
+                  KeyPath="yes"
+                  Vital="yes"/>
+          </Component>
+          <Component Id="cmpIEWebNotificationsServer_SuppressPrivilegeElevationDialog32" Guid="004A0D77-201A-486F-A08B-B00053C40007" Win64="no">
+            <!-- the policy ID is equal to the COM class ID though it's not required -->
+            <RegistryKey Root="HKLM" Key="Software\Microsoft\Internet Explorer\Low Rights\ElevationPolicy\{B711FAD4-1850-4221-BB31-8791CA9FAA38}">
+              <RegistryValue Name="Policy" Value="3" Type="integer"/>
+              <RegistryValue Name="AppName" Value="ie_web_notifications_server.exe" Type="string"/>
+              <RegistryValue Name="AppPath" Value="[dirProgramFilesIEWebNotificaions]" Type="string"/>
+            </RegistryKey>
+          </Component>
+          <?if $(var.Platform) = x64 ?>
+          <Component Id="cmpIEWebNotificationsServer_SuppressPrivilegeElevationDialog64" Guid="004A0D77-201A-486F-A08B-B00053C40008" Win64="yes">
+            <!-- the policy ID is equal to the COM class ID though it's not required -->
+            <RegistryKey Root="HKLM" Key="Software\Microsoft\Internet Explorer\Low Rights\ElevationPolicy\{B711FAD4-1850-4221-BB31-8791CA9FAA38}">
+              <RegistryValue Name="Policy" Value="3" Type="integer"/>
+              <RegistryValue Name="AppName" Value="ie_web_notifications_server.exe" Type="string"/>
+              <RegistryValue Name="AppPath" Value="[dirProgramFilesIEWebNotificaions]" Type="string"/>
+            </RegistryKey>
+          </Component>
+          <?endif ?>
+          <Component Id="cmpIEWebNotificationsToast32" Guid="004A0D77-201A-486F-A08B-B00053C40009">
+            <File Id="fileIEWebNotificationsToast_DLL"
+                  Name="ie_web_notifications.toast.dll"
+                  Source="$(var.BinaryOutputDir)Win32_$(var.BinariesConfiguration)/ie_web_notifications.toast.dll"
+                  KeyPath="yes"
+                  Vital="yes"/>
+          </Component>
+          <Component Id="cmpIEWebNotificationsD2D32" Guid="004A0D77-201A-486F-A08B-B00053C40011">
+            <File Id="fileIEWebNotificationsD2D_DLL"
+                  Name="ie_web_notifications.d2d.dll"
+                  Source="$(var.BinaryOutputDir)Win32_$(var.BinariesConfiguration)/ie_web_notifications.d2d.dll"
+                  KeyPath="yes"
+                  Vital="yes"/>
+          </Component>
+          <Component Id="cmpSettingsWindow.html" Guid="004A0D77-201A-486F-A08B-B00053C40006">
+            <File Id="fileSettingsWindow.html"
+                  Name="SettingsWindow.html"
+                  Source="$(var.BinaryOutputDir)../SettingsWindow.html"
+                  KeyPath="yes"
+                  Vital="yes"/>
+          </Component>
+          <Component Id="LICENSE" Guid="004A0D77-201A-486F-A08B-B00053C40012">
+              <File Id="LICENSE"
+                    Name="LICENSE"
+                    Source="$(var.BinaryOutputDir)../LICENSE"
+                    KeyPath="yes"
+                    Vital="yes"/>
+            </Component>
+        </Directory>
+      </Directory>
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="dirShortcutsIEWebNotifications" Name="$(var.MainProductName)">
+          <Component Id="cmpIEWebNotificationsServerShortcut" Guid="004A0D77-201A-486F-A08B-B00053C40010">
+            <Shortcut Id="lnkIEWebNotificationsServer"
+                      Name="IE Web Notifications"
+                      Description="IE Web Notifications"
+                      Target="[#fileIEWebNotificationsServer_EXE]"
+                      WorkingDirectory="dirProgramFilesIEWebNotificaions"
+                      Icon="iconGlobalIcon"
+                      Arguments="--settings">
+              <!-- Set the AppID in order to get toasts to work -->
+              <ShortcutProperty Key="System.AppUserModel.ID" Value="ukot.ie_web_notifications"></ShortcutProperty>
+            </Shortcut>
+            <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\$(var.MainProductName)"
+                           Name="installed.toast"
+                           Type="integer"
+                           Value="1"
+                           KeyPath="yes"/>
+          </Component>
+          <Component Id="cmdIEWebNotificationsUninstall" Guid="004A0D77-201A-486F-A08B-B00053C40002">
+            <Shortcut Id="shortcutUninstall"
+                      Name="Uninstall $(var.MainProductName)"
+                      Target="[System64Folder]msiexec.exe"
+                      Arguments="/x [ProductCode]"/>
+            <RemoveFolder On="uninstall" Id="dirShortcutsIEWebNotifications"/>
+            <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\$(var.MainProductName)"
+                           Name="Installed"
+                           Type="integer"
+                           Value="1"
+                           KeyPath="yes" />
+          </Component>
+        </Directory>
+      </Directory>
+
+      <Directory Id="LOCAL_LOW_APP_DATA_FOLDER">
+        <Directory Id="dirPrivateLocalLowDataFolder" Name="$(var.MainProductName)">
+          <Component Id="cmdIEWebNotificationsLocalLowDataFolder" Guid="004A0D77-201A-486F-A08B-B00053C40004">
+            <wixUtil:RemoveFolderEx On="uninstall" Property="PRIVATE_LOCAL_LOW_APP_DATA_FOLDER"/>
+            <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\$(var.MainProductName)" Name="PrivateDir"
+                           Type="string" Value="[dirPrivateLocalLowDataFolder]" KeyPath="yes"  />
+          </Component>
+        </Directory>
+      </Directory>
+    </Directory>
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="MainProductComponents">
+      <ComponentRef Id="cmpIEWebNotificationsBHO32"/>
+      <ComponentRef Id="cmpIEWebNotificationsServer_SuppressPrivilegeElevationDialog32"/>
+      <?if $(var.Platform) = x64 ?>
+      <ComponentRef Id="cmpIEWebNotificationsBHO64"/>
+      <ComponentRef Id="cmpIEWebNotificationsServer_SuppressPrivilegeElevationDialog64"/>
+      <?endif ?>
+      <ComponentRef Id="cmpIEWebNotificationsServer"/>
+      <ComponentRef Id="cmpIEWebNotificationsServerShortcut"/>
+      <ComponentRef Id="cmpIEWebNotificationsToast32"/>
+      <ComponentRef Id="cmpIEWebNotificationsD2D32"/>
+      <ComponentRef Id="cmpSettingsWindow.html"/>
+      <ComponentRef Id="LICENSE"/>
+    </ComponentGroup>
+    <ComponentGroup Id="ProgramMenuShortcutsComponents">
+      <ComponentRef Id="cmdIEWebNotificationsUninstall"/>
+    </ComponentGroup>
+    <ComponentGroup Id="AppLocalLowDataFolderComponents">
+      <ComponentRef Id="cmdIEWebNotificationsLocalLowDataFolder"/>
+    </ComponentGroup>
+  </Fragment>
+</Wix>
