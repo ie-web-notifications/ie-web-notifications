@@ -90,7 +90,7 @@ namespace ukot { namespace ie_web_notifications {
     BHOImpl();
     ~BHOImpl();
 
-    DECLARE_REGISTRY_RESOURCEID(IDR_IE_WEB_NOTIFICATIONS)
+    DECLARE_REGISTRY_RESOURCEID(IDR_REGISTRY_SCRIPT)
 
     DECLARE_NOT_AGGREGATABLE(BHOImpl)
 
