@@ -50,6 +50,8 @@ namespace ukot { namespace ie_web_notifications {
       MSG_WM_MOUSEMOVE(OnMouseMove)
       MSG_WM_MOUSELEAVE(OnMouseLeave)
       MSG_WM_LBUTTONUP(OnLMouseBtnUp) /* on click */
+      MSG_WM_TIMER(OnTimer)
+      MSG_WM_DESTROY(OnDestroy)
       MESSAGE_HANDLER(WM_RBUTTONUP, OnSettings)
     END_MSG_MAP()
 
@@ -63,6 +65,8 @@ namespace ukot { namespace ie_web_notifications {
     void OnMouseMove(WPARAM, const WTL::CPoint& point);
     void OnMouseLeave();
     void OnLMouseBtnUp(WPARAM /*wParam*/, const WTL::CPoint& point);
+    void OnTimer(UINT_PTR timerID);
+    void OnDestroy();
     LRESULT OnSettings(UINT /*msg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*handled*/);
 
     HRESULT createDeviceResources();
@@ -89,6 +93,7 @@ namespace ukot { namespace ie_web_notifications {
     D2D1_RECT_F m_closeButtonRect;
     bool m_closeButtonIsMouseOver = false;
     bool m_isTrackingMouseEvents = false;
+    UINT_PTR m_paintTimer = NULL;
   };
 
   typedef ATL::CWinTraits<WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, WS_EX_TOOLWINDOW | WS_EX_TOPMOST> NotificationBorderWindowStyles;

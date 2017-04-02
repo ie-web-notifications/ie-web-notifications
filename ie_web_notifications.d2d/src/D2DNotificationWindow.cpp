@@ -50,6 +50,8 @@ LRESULT D2DNotificationWindow::OnCreate(const CREATESTRUCT* /*createStruct*/) {
     WTL::CDC hdc = GetDC();
     m_dpi = hdc.GetDeviceCaps(LOGPIXELSX);
   }
+  auto isTimerCreated = SetTimer(m_paintTimer, 400/*msec*/);
+  assert(isTimerCreated && "Cannot create timer");
   SetMsgHandled(false);
   return 0;
 }
@@ -194,6 +196,18 @@ void D2DNotificationWindow::OnLMouseBtnUp(WPARAM /*wParam*/, const WTL::CPoint& 
   bool isWithinCloseButton = m_closeButtonRect.left <= dpiUnawarePoint.x && dpiUnawarePoint.x <= m_closeButtonRect.right
     && m_closeButtonRect.top <= dpiUnawarePoint.y && dpiUnawarePoint.y <= m_closeButtonRect.bottom;
   onCloseRequest(!isWithinCloseButton);
+}
+
+void D2DNotificationWindow::OnTimer(UINT_PTR timerID) {
+  if (timerID == m_paintTimer) {
+    Invalidate();
+  }
+}
+
+void D2DNotificationWindow::OnDestroy() {
+  auto isTimerKilled = KillTimer(m_paintTimer);
+  assert(isTimerKilled && "Cannot kill timer");
+  SetMsgHandled(false);
 }
 
 LRESULT D2DNotificationWindow::OnSettings(UINT /*msg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*handled*/) {
