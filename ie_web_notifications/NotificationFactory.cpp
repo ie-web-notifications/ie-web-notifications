@@ -216,6 +216,11 @@ STDMETHODIMP NotificationFactoryImpl::GetDispID(
     *pid = 3;
     return S_OK;
   }
+  if (((grfdex & fdexNameCaseSensitive) && wcscmp(bstrName, L"setFireEvent") == 0)
+    || ((grfdex & fdexNameCaseInsensitive) && _wcsicmp_l(bstrName, L"setFireEvent", m_LC_ALL_C.handle()) == 0)) {
+    *pid = 4;
+    return S_OK;
+  }
   return DISP_E_UNKNOWNNAME;
 }
 
@@ -305,6 +310,11 @@ STDMETHODIMP NotificationFactoryImpl::InvokeEx(
       callback(permission);
     }
     return S_OK;
+  } else if (4 == id && (DISPATCH_METHOD & wFlags) && pdp->cArgs == 1) {
+    if (VT_DISPATCH != V_VT(pdp->rgvarg))
+      return DISP_E_BADVARTYPE;
+    m_context->fireEventHelper = ATL::CComQIPtr<IDispatchEx>(V_DISPATCH(pdp->rgvarg));
+    return m_context->fireEventHelper ? S_OK : DISP_E_BADVARTYPE;
   } else if (DISPID_VALUE == id && (DISPATCH_METHOD & wFlags) && pdp->cArgs == 3) {
     ATL::CComQIPtr<IDispatchEx> _this;
     if (!(VT_DISPATCH == V_VT(&pdp->rgvarg[2]) && (_this = V_DISPATCH(&pdp->rgvarg[2]))))
@@ -331,6 +341,19 @@ STDMETHODIMP NotificationFactoryImpl::beforeUnload() {
   return S_OK;
 }
 
+void NotificationFactoryImpl::fireEvent(Context& context, IDispatchEx& jsObject, const wchar_t* nativeEvent) {
+  if (!context.fireEventHelper || !nativeEvent)
+    return;
+  static_assert(sizeof(ATL::CComVariant) == sizeof(VARIANT), "Size of ATL::CComVariant is incompatible");
+  ATL::CComVariant args[2];
+  args[0] = nativeEvent;
+  args[1] = &jsObject;
+  DISPPARAMS params = { 0 };
+  params.cArgs = 2;
+  params.rgvarg = args;
+  context.fireEventHelper->InvokeEx(DISPID_VALUE, LOCALE_USER_DEFAULT, DISPATCH_METHOD, &params, nullptr, nullptr, nullptr);
+}
+
 NotificationId NotificationFactoryImpl::sendNotification(IDispatchEx& jsObject, const std::wstring& title,
   const ATL::CComPtr<IDispatchEx>& notificationOptions, IServiceProvider* serviceProvider) {
   // m_context is always valid here because this method is called only from InvokeEx which tests it agains nullptr.
@@ -349,9 +372,9 @@ NotificationId NotificationFactoryImpl::sendNotification(IDispatchEx& jsObject, 
   IDispatchEx* jsObjectToCapture = &jsObject;
   m_context->jsObjects.emplace_back(&jsObject);
   std::weak_ptr<Context> ctxToCatpute = m_context;
-  auto dispatchWrapper = [ctxToCatpute, jsObjectToCapture](const std::function<bool(IDispatchEx&)>& call){
+  auto dispatchWrapper = [ctxToCatpute, jsObjectToCapture](const std::function<bool(Context&, IDispatchEx&)>& call){
     if (auto ctx = ctxToCatpute.lock()) {
-      // queue the callback, which calls the notification delegate (onclick, onerror, onclose, onshow)
+      // queue the callback, which fires an event (click, error, close, show) on the notification object
       // send message to the current window(this, delegate type)
       if (!!ctx->dispatchCall) {
         auto x = [ctxToCatpute, call, jsObjectToCapture]{
@@ -359,7 +382,7 @@ NotificationId NotificationFactoryImpl::sendNotification(IDispatchEx& jsObject, 
             auto it = std::find_if(ctx->jsObjects.begin(), ctx->jsObjects.end(), [&jsObjectToCapture](const ATL::CComPtr<IDispatchEx>& obj)->bool {
               return static_cast<IDispatchEx*>(obj) == jsObjectToCapture;
             });
-            if (it != ctx->jsObjects.end() && call(**it)) {
+            if (it != ctx->jsObjects.end() && call(*ctx, **it)) {
               ctx->jsObjects.erase(it);
             }
           }
@@ -370,30 +393,31 @@ NotificationId NotificationFactoryImpl::sendNotification(IDispatchEx& jsObject, 
   };
 
   notification.callback = [dispatchWrapper](NotificationDestroyReason arg){
-    dispatchWrapper([arg](IDispatchEx& jsObject)->bool{
+    dispatchWrapper([arg](Context& context, IDispatchEx& jsObject)->bool{
       if (NotificationDestroyReason::clicked == arg) {
-        callOnJsObject(jsObject, L"onclick");
+        NotificationFactoryImpl::fireEvent(context, jsObject, L"click");
       } else if (NotificationDestroyReason::closed == arg) {
-        callOnJsObject(jsObject, L"onclose");
+        NotificationFactoryImpl::fireEvent(context, jsObject, L"close");
       } else if (NotificationDestroyReason::replaced == arg) {
-        callOnJsObject(jsObject, L"onreplaced");
+        NotificationFactoryImpl::fireEvent(context, jsObject, L"replace");
+        NotificationFactoryImpl::fireEvent(context, jsObject, L"close");
       } else /*if (NotificationDestroyReason::error == arg)*/ {
-        callOnJsObject(jsObject, L"onerror");
+        NotificationFactoryImpl::fireEvent(context, jsObject, L"error");
       }
       return true;
     });
   };
 
   notification.error = [dispatchWrapper]{
-    dispatchWrapper([](IDispatchEx& jsObject)->bool{
-      callOnJsObject(jsObject, L"onerror");
+    dispatchWrapper([](Context& context, IDispatchEx& jsObject)->bool{
+      NotificationFactoryImpl::fireEvent(context, jsObject, L"error");
       return true;
     });
   };
 
   notification.shown = [dispatchWrapper]{
-    dispatchWrapper([](IDispatchEx& jsObject)->bool{
-      callOnJsObject(jsObject, L"onshown");
+    dispatchWrapper([](Context& context, IDispatchEx& jsObject)->bool{
+      NotificationFactoryImpl::fireEvent(context, jsObject, L"show");
       return false;
     });
   };

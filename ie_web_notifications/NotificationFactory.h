@@ -24,6 +24,13 @@ namespace ukot { namespace ie_web_notifications {
     , public IDispatchExEmptyImpl
     , public INotificationFactory
   {
+    struct Context {
+      std::function<void(const std::function<void()>&, bool)> dispatchCall;
+      ClientPtr client;
+      ATL::CComPtr<IDispatchEx> fireEventHelper;
+      // notification javascript objects. They are created by IE.
+      std::vector<ATL::CComPtr<IDispatchEx>> jsObjects;
+    };
   public:
     typedef std::function<void(const std::function<void(const std::wstring& origin, Permission)>&)> RequestPermission;
     NotificationFactoryImpl(const ClientPtr& client
@@ -58,6 +65,7 @@ namespace ukot { namespace ie_web_notifications {
     STDMETHOD(beforeUnload)() override;
 
   private:
+    static void fireEvent(Context& context, IDispatchEx& jsObject, const wchar_t* nativeEvent);
     NotificationId sendNotification(IDispatchEx& _this, const std::wstring& title,
       const ATL::CComPtr<IDispatchEx>& notificationOptions, IServiceProvider* serviceProvider);
   private:
@@ -66,12 +74,6 @@ namespace ukot { namespace ie_web_notifications {
     ukot::util::CScopedLocale m_LC_ALL_C;
     std::function<std::wstring()> m_getOrigin;
     RequestPermission m_requestPermission;
-    struct Context {
-      std::function<void(const std::function<void()>&, bool)> dispatchCall;
-      ClientPtr client;
-      // notification javascript objects. They are created by IE.
-      std::vector<ATL::CComPtr<IDispatchEx>> jsObjects;
-    };
     std::shared_ptr<Context> m_context;
   };
 }}
