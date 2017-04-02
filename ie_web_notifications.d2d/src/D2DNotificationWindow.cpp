@@ -81,7 +81,7 @@ void D2DNotificationWindow::OnPaint(HDC) {
     // Draw two rectangles.
     auto iconAreaWidth = kWindowHeight;
     {
-      D2D1_RECT_F iconContainer = D2D1::RectF(0, 0, iconAreaWidth, renderTargetSize.height);
+      D2D1_RECT_F iconContainer = D2D1::RectF(0, 0, static_cast<float>(iconAreaWidth), renderTargetSize.height);
       m_renderTarget->FillRectangle(&iconContainer, m_greyBrush);
       // hack
       if (!!m_wicBitmap && !m_d2Bitmap) {
@@ -111,8 +111,8 @@ void D2DNotificationWindow::OnPaint(HDC) {
       uint32_t titleMargingTop = 10;
       uint32_t titleMargingLeft = 10;
       D2D1_RECT_F titleRect{};
-      titleRect.left = iconAreaWidth + titleMargingLeft;
-      titleRect.top = titleMargingTop;
+      titleRect.left = static_cast<float>(iconAreaWidth + titleMargingLeft);
+      titleRect.top = static_cast<float>(titleMargingTop);
       titleRect.right = renderTargetSize.width - kCloseButtonWidth;
       titleRect.bottom = kTitleHeight;
       m_renderTarget->DrawTextW(m_notificationBody.title.c_str(), m_notificationBody.title.length(),
@@ -122,8 +122,8 @@ void D2DNotificationWindow::OnPaint(HDC) {
       uint32_t bodyMargingTop = 0;
       uint32_t bodyMargingLeft = 5;
       D2D1_RECT_F bodyRect{};
-      bodyRect.left = iconAreaWidth + bodyMargingLeft;
-      bodyRect.top = kTitleHeight + bodyMargingTop;
+      bodyRect.left = static_cast<float>(iconAreaWidth + bodyMargingLeft);
+      bodyRect.top = static_cast<float>(kTitleHeight + bodyMargingTop);
       bodyRect.right = renderTargetSize.width;
       bodyRect.bottom = renderTargetSize.height;
       m_renderTarget->DrawTextW(m_notificationBody.body.c_str(), m_notificationBody.body.length(),
@@ -135,7 +135,7 @@ void D2DNotificationWindow::OnPaint(HDC) {
       m_closeButtonRect.left = renderTargetSize.width - kCloseButtonWidth - buttonMargin;
       m_closeButtonRect.right = renderTargetSize.width - buttonMargin;
       m_closeButtonRect.top = 0;
-      m_closeButtonRect.bottom = kCloseButtonWidth - buttonMargin;
+      m_closeButtonRect.bottom = static_cast<float>(kCloseButtonWidth - buttonMargin);
       m_renderTarget->DrawRectangle(m_closeButtonRect, m_greyBrush);
       D2D1_POINT_2F centerPoint{ m_closeButtonRect.left + (m_closeButtonRect.right - m_closeButtonRect.left) / 2.f,
         m_closeButtonRect.top + (m_closeButtonRect.bottom - m_closeButtonRect.top) / 2.f };
@@ -178,7 +178,7 @@ void D2DNotificationWindow::OnMouseMove(WPARAM, const WTL::CPoint& point) {
     tme.dwFlags = TME_LEAVE;
     tme.hwndTrack = m_hWnd;
     tme.dwHoverTime = HOVER_DEFAULT;
-    m_isTrackingMouseEvents = TrackMouseEvent(&tme);
+    m_isTrackingMouseEvents = TrackMouseEvent(&tme) != FALSE;
   }
 }
 void D2DNotificationWindow::OnMouseLeave() {
