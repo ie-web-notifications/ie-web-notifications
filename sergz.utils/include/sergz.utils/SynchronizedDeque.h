@@ -18,43 +18,35 @@
 namespace ukot { namespace utils {
   template<typename T>
   class SynchronizedDeque: Noncopyable {
-    /// The note about using std::lock_guard and std::unique_lock:
-    /// - std::lock_guard is very light
-    /// - std::unique_lock can be used in conjunction with std::condition_variable
   public:
-    SynchronizedDeque(){};
     void push_back(const T& value) {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      auto wasEmpty = m_deque.empty();
-      m_deque.push_back(value);
-      if (wasEmpty) {
-        m_conditionVar.notify_one();
+      {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_deque.push_back(value);
       }
+      m_conditionVar.notify_one();
     }
     void push_back(T&& value) {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      auto wasEmpty = m_deque.empty();
-      m_deque.push_back(std::move(value));
-      if (wasEmpty) {
-        m_conditionVar.notify_one();
+      {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_deque.push_back(std::move(value));
       }
+      m_conditionVar.notify_one();
     }
 
     void push_front(const T& value) {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      auto wasEmpty = m_deque.empty();
-      m_deque.push_front(value);
-      if (wasEmpty) {
-        m_conditionVar.notify_one();
+      {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_deque.push_front(value);
       }
+      m_conditionVar.notify_one();
     }
     void push_front(T&& value) {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      auto wasEmpty = m_deque.empty();
-      m_deque.push_front(std::move(value));
-      if (wasEmpty) {
-        m_conditionVar.notify_one();
+      {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_deque.push_front(std::move(value));
       }
+      m_conditionVar.notify_one();
     }
 
     T pop_front() {
@@ -81,11 +73,14 @@ namespace ukot { namespace utils {
     }
 
     void clear() {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      m_deque.clear();
+      {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_deque.clear();
+      }
+      m_conditionVar.notify_one();
     }
   protected:
-    // protected for tests.
+    // protected for tests and to simplify extending of the class.
     std::deque<T> m_deque;
     std::mutex m_mutex;
     std::condition_variable m_conditionVar;
