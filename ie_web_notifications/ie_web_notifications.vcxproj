@@ -298,6 +298,7 @@
   <ItemGroup>
     <None Include="ie_web_notifications.def" />
     <None Include="ie_web_notifications.rgs" />
+    <None Include="init.js" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ie_web_notifications.protocol\ie_web_notifications.protocol.vcxproj">

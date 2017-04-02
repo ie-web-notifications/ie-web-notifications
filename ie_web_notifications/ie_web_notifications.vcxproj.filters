@@ -160,6 +160,9 @@
     <None Include="ie_web_notifications.rgs">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="init.js">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="ie_web_notifications.idl">

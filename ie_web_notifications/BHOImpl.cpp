@@ -23,6 +23,7 @@
 #include "GModel.h"
 #include "IWebBrowser2Helper.h"
 #include "LoggerHelper.h"
+#include <ie_web_notifications.utils/convertTo.h>
 
 using namespace ukot::ie_web_notifications;
 
@@ -392,12 +393,30 @@ namespace {
     ATL::CComPtr<INotificationFactory> m_notifications;
   };
 
+  ATL::CComBSTR loadInitJs() {
+    auto hModule = ATL::_AtlBaseModule.GetModuleInstance();
+    HRSRC hResourceInfo = ::FindResource(hModule, MAKEINTRESOURCE(IDR_INIT_JS), MAKEINTRESOURCE(RC_TEXTFILE));
+    if (nullptr == hResourceInfo) {
+      return nullptr;
+    }
+    auto hResource = ::LoadResource(ATL::_AtlBaseModule.GetModuleInstance(), hResourceInfo);
+    if (nullptr == hResource) {
+      return nullptr;
+    }
+    auto pData = ::LockResource(hResource);
+    if (nullptr == pData)
+      return nullptr;
+    auto size = SizeofResource(ATL::_AtlBaseModule.GetModuleInstance(), hResourceInfo);
+    return util::convertToBSTR(std::string(static_cast<const char*>(pData), size));
+  }
+
   void InjectNotification(IWebBrowser2& webBrowser
     , const ClientPtr& client
     , const std::function<void(const std::function<void()>& call, bool)>& dispatchCall
     , const NotificationFactoryImpl::RequestPermission& requestPermission
     , const std::function<std::wstring()>& getOrigin
-    , const std::shared_ptr<sergz::ILoggerFactory>& loggerFactory) {
+    , const std::shared_ptr<sergz::ILoggerFactory>& loggerFactory)
+  {
     ATL::CComPtr<IDispatch> pDocDispatch;
     webBrowser.get_Document(&pDocDispatch);
     ATL::CComQIPtr<IHTMLDocument2> pDoc2 = pDocDispatch;
@@ -412,28 +431,79 @@ namespace {
       return;
     }
 
+    // check that there are still no window.Notification
     DISPID dispid = 0;
     HRESULT hr = pWndEx->GetDispID(ATL::CComBSTR(L"Notification"), fdexNameCaseSensitive, &dispid);
     if (SUCCEEDED(hr) && 0 != dispid) {
       return;
     }
-    hr = pWndEx->GetDispID(ATL::CComBSTR(L"Notification"), fdexNameEnsure, &dispid);
-    if (FAILED(hr)) {
-      return;
+
+    // create anonymous function with body from init.js and call with native Notification as argument
+
+    ATL::CComQIPtr<IDispatchEx> functionCtr; // = window.Function
+    {
+      hr = pWndEx->GetDispID(ATL::CComBSTR(L"Function"), fdexNameCaseSensitive, &dispid);
+      if (FAILED(hr)) {
+        return;
+      }
+      ATL::CComVariant param;
+      DISPPARAMS params = { 0 };
+      ATL::CComVariant result;
+      hr = pWndEx->Invoke(dispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_PROPERTYGET, &params, &result, nullptr, nullptr);
+      if (FAILED(hr)) {
+        return;
+      }
+      if (VT_DISPATCH != result.vt || !(functionCtr = result.pdispVal)) {
+        return;
+      }
     }
+
+    ATL::CComQIPtr<IDispatchEx> functionObj; // = new Function("native", body)
+    {
+      ATL::CComBSTR argNameParam(L"native");
+      ATL::CComBSTR bodyParam = loadInitJs();
+      static_assert(sizeof(ATL::CComVariant) == sizeof(VARIANT), "Size of ATL::CComVariant is incompatible");
+      ATL::CComVariant argValues[2];
+      argValues[0] = bodyParam;
+      argValues[1] = argNameParam;
+
+      DISPPARAMS params = { 0 };
+      params.cArgs = 2;
+      params.rgvarg = argValues;
+      ATL::CComVariant result;
+      hr = functionCtr->InvokeEx(DISPID_VALUE, LOCALE_USER_DEFAULT, DISPATCH_CONSTRUCT, &params, &result, nullptr, nullptr);
+      if (FAILED(hr)) {
+        return;
+      }
+      if (VT_DISPATCH != result.vt || !(functionObj = result.pdispVal)) {
+        return;
+      }
+    }
+
     ATL::CComPtr<IDispatch> webNotification;
     hr = ukot::atl::SharedObject<NotificationFactoryImpl>::Create(&webNotification, client, dispatchCall, getOrigin, requestPermission);
-    ATL::CComVariant param(webNotification);
-
-    DISPPARAMS params;
-    params.cArgs = 1;
-    params.cNamedArgs = 0;
-    params.rgvarg = &param;
-    params.rgdispidNamedArgs = 0;
-    hr = pWndEx->Invoke(dispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_PROPERTYPUT | DISPATCH_PROPERTYPUTREF, &params, nullptr, nullptr, nullptr);
     if (FAILED(hr)) {
       return;
     }
+
+    // functionObj(native);
+    {
+      ATL::CComVariant argValue = webNotification;
+      DISPPARAMS params = { 0 };
+      params.cArgs = 1;
+      params.rgvarg = &argValue;
+      hr = functionObj->InvokeEx(DISPID_VALUE, LOCALE_USER_DEFAULT, DISPATCH_METHOD, &params, nullptr, nullptr, nullptr);
+      if (FAILED(hr)) {
+        return;
+      }
+    }
+
+    // JIC, test it
+    hr = pWndEx->GetDispID(ATL::CComBSTR(L"Notification"), fdexNameCaseSensitive, &dispid);
+    if (FAILED(hr)) {
+      return;
+    }
+
     ATL::CComPtr<IDispatch> onBeforeUnload;
     ATL::CComQIPtr<INotificationFactory> notifications = webNotification;
     hr = ukot::atl::SharedObject<OnBeforeUnloadImpl>::Create(&onBeforeUnload, notifications);

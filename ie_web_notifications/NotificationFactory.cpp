@@ -305,34 +305,22 @@ STDMETHODIMP NotificationFactoryImpl::InvokeEx(
       callback(permission);
     }
     return S_OK;
-  } else if (DISPID_VALUE == id && DISPATCH_CONSTRUCT == wFlags && pdp->cArgs > 0) {
-    if (VT_DISPATCH == V_VT(pdp->rgvarg)) {
-      ATL::CComQIPtr<IDispatchEx> _this{ V_DISPATCH(pdp->rgvarg) };
-      if (!!_this) {
-        // the first arg should be title, BSTR
-        std::wstring title;
-        ATL::CComQIPtr<IDispatchEx> notificationOptions;
-        if (pdp->cArgs == 2) {
-          if (VT_BSTR == V_VT(&pdp->rgvarg[1])) {
-            title = util::convertToWString(pdp->rgvarg[1].bstrVal);
-          } else {
-            return DISP_E_BADVARTYPE;
-          }
-        } else if (pdp->cArgs == 3) {
-          if (VT_BSTR == V_VT(&pdp->rgvarg[2]) && VT_DISPATCH == V_VT(&pdp->rgvarg[1])) {
-            title = util::convertToWString(pdp->rgvarg[2].bstrVal);
-            notificationOptions = pdp->rgvarg[1].pdispVal;
-          } else {
-            return DISP_E_BADVARTYPE;
-          }
-        } else {
-          return DISP_E_BADPARAMCOUNT;
-        }
+  } else if (DISPID_VALUE == id && (DISPATCH_METHOD & wFlags) && pdp->cArgs == 3) {
+    ATL::CComQIPtr<IDispatchEx> _this;
+    if (!(VT_DISPATCH == V_VT(&pdp->rgvarg[2]) && (_this = V_DISPATCH(&pdp->rgvarg[2]))))
+      return DISP_E_BADVARTYPE;
 
-        auto notificationId = sendNotification(*_this, title, notificationOptions, pspCaller);
-        injectCloseMethod(*_this, notificationId, m_context->client);
-      }
+    // the first arg should be title, BSTR
+    if (VT_BSTR != V_VT(&pdp->rgvarg[1]))
+      return DISP_E_BADVARTYPE;
+    auto title = util::convertToWString(pdp->rgvarg[1].bstrVal);
+
+    ATL::CComQIPtr<IDispatchEx> notificationOptions;
+    if (VT_DISPATCH == V_VT(&pdp->rgvarg[0])) {
+      notificationOptions = pdp->rgvarg[0].pdispVal;
     }
+    auto notificationId = sendNotification(*_this, title, notificationOptions, pspCaller);
+    injectCloseMethod(*_this, notificationId, m_context->client);
     return S_OK;
   }
   return E_NOTIMPL;
