@@ -119,7 +119,18 @@ Object.defineProperties(window.Notification, {
   'requestPermission': {
     __proto__: null,
     value: function (callback) {
-      return native.requestPermission(callback);
+      if (callback)
+        return native.requestPermission(callback);
+      /*
+      // TODO:
+      if (hasPromise()) {
+        return new Promise(function (resolve, reject) {
+          native.requestPermission(resolve);
+        });
+      }
+      //*/
+      // else fallback with a dummy function
+      return native.requestPermission(function () { });
     },
     enumerable: true
   }

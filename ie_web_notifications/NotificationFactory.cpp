@@ -253,30 +253,18 @@ STDMETHODIMP NotificationFactoryImpl::InvokeEx(
     return ATL::CComVariant{ util::convertToBSTR(permission) }.Detach(pvarRes);
   } else if (3 == id && (DISPATCH_METHOD & wFlags)) {
     ATL::CComQIPtr<IDispatchEx> jsCallback;
-    if (pdp->cArgs > 1) {
+    if (pdp->cArgs != 1) {
       return DISP_E_BADPARAMCOUNT;
     }
-    bool hasCallback = pdp->cArgs == 1;
-    if (hasCallback) {
-      if (VT_DISPATCH != V_VT(pdp->rgvarg) || !(jsCallback = pdp->rgvarg->pdispVal)) {
-        return DISP_E_BADVARTYPE;
-      }
+    if (VT_DISPATCH != V_VT(pdp->rgvarg) || !(jsCallback = pdp->rgvarg->pdispVal)) {
+      return DISP_E_BADVARTYPE;
     }
-    // else {
-    //  try to use Promise
-    //  It's only an idea:
-    //    if no "Promise" in window do nothing
-    //    create our C++ function(resolve, reject) object (simply implement IDispatchEx)
-    //    pass it into new Promise, it should immediately call our function object
-    //      inside that object store resovle function
-    //    assign stored resolve function to jsCallback.
-    //}
-    // BTW, using Promise should allow to avoid synchronous call client->getPermission.
     if (!m_requestPermission) {
       return DISP_E_EXCEPTION;
     }
+    //TODO: check whether it may be async, currently getPermission is synchronous.
     auto permission = m_context->client->getPermission(m_getOrigin());
-    auto callback = [jsCallback, hasCallback](Permission value) {
+    auto callback = [jsCallback](Permission value) {
       DISPPARAMS params{};
       params.cArgs = 1;
       ATL::CComVariant vtPermission{ util::convertToBSTR(permissionAsString(value)) };
@@ -289,7 +277,7 @@ STDMETHODIMP NotificationFactoryImpl::InvokeEx(
       std::weak_ptr<Context> ctxToCatpute = m_context;
       m_requestPermission([ctxToCatpute, callback](const std::wstring& origin, Permission value){
         // destroyed context means unloaded frame, just ignore the result for that frame.
-        // The request permission window can be not closed for that frame is that frame is a nested
+        // The request permission window can be not closed for that frame if that frame is a nested
         // frame.
         // To support such case, one need to
         // - capture in addition a weak_ptr to client,
